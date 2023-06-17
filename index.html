@@ -1,0 +1,3358 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="数式を簡単に生成するツールです．wordの数式の書式にも対応しています．"
+    />
+    <link rel="stylesheet" href="style.css" />
+    <title>数式生成ツール</title>
+  </head>
+
+  <body>
+    <div id="frame">
+      <div class="mainTitle">
+        <img src="./img/FormulaGenerator.png" alt="ComingSoon" id="logo" />
+        <h1>数式生成ツール</h1>
+      </div>
+      <textarea id="input" rows="6" cols="10" onclick="textClear(0)">
+%以下の例のように任意の数字や関数を入力します．(例はクリックすると消えます)
+
+
+x = {-b \pm \sqrt{b^2-4ac} \over 2a}
+</textarea
+      >
+      <div class="left">
+        <input type="checkbox" id="display" checked onchange="convert()" />
+        <label for="display">Display style</label>
+      </div>
+      <div class="right">
+        <input
+          type="button"
+          value="Render TeX"
+          id="render"
+          onclick="convert()"
+        />
+      </div>
+      <br clear="all" />
+      <div id="output" rows="6" cols="10"></div>
+    </div>
+    <div id="funcButton">
+      <div id="ui">
+        <button onclick="textClear(1)">clear</button>
+        <select id="inputTypeDisplay" onchange="selectInputType()">
+          <option value="select" selected disabled>数式を選択</option>
+          <option value="operator">演算子</option>
+          <option value="brackets">括弧</option>
+          <option value="fraction">分数</option>
+          <option value="logic">論理</option>
+          <option value="set">集合</option>
+          <option value="permutationAndCombination">順序/組合せ</option>
+          <option value="summationAndProduct">総和/総乗</option>
+          <option value="radicalAndEexponentAndLogarithm">
+            根号/指数/対数
+          </option>
+          <option value="complexNumber">複素数</option>
+          <option value="trigonometricFunction">三角関数</option>
+          <option value="limit">極限</option>
+          <option value="differential">微分</option>
+          <option value="integral">積分</option>
+          <option value="vector">ベクトル</option>
+          <option value="matrix">行列</option>
+          <option value="space">空白</option>
+          <option value="displayFormat">表示形式</option>
+          <option value="fontAndSize">フォント/サイズ</option>
+          <option value="greekLettersUppercase">ギリシャ文字（大文字）</option>
+          <option value="greekLettersLowercase">ギリシャ文字（小文字）</option>
+          <option value="specialCharacter">特殊文字</option>
+          <option value="accent">アクセント</option>
+        </select>
+        <button id="undo"><</button>
+        <button id="redo">></button>
+        <span tooltip="word形式でも利用できる数式形式にコピー" flow="down">
+          <button onclick="copy()">copy</button>
+        </span>
+      </div>
+
+      <div id="funcButtonTable">
+        <!-- 演算子 -->
+        <div id="operator">
+          <table border="1">
+            <caption>
+              算術記号
+            </caption>
+            <tr>
+              <td>
+                <span tooltip="正符号・加法" flow="down">
+                  <button onclick="funcInput(' + ')">\[ + \]</button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="負符号・減法" flow="down">
+                  <button onclick="funcInput(' - ')">\[ - \]</button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="加法・減法1" flow="down">
+                  <button onclick="funcInput(' \\pm ')">\[ \pm \]</button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="加法・減法2" flow="down">
+                  <button onclick="funcInput(' \\mp ')">\[ \mp \]</button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="乗法1" flow="down">
+                  <button onclick="funcInput(' \\times ')">\[ \times \]</button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="乗法2" flow="down">
+                  <button onclick="funcInput(' \\cdot ')">\[ \cdot \]</button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="乗法3" flow="down">
+                  <button onclick="funcInput(' \\ast ')">\[ \ast \]</button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="除法1" flow="down">
+                  <button onclick="funcInput(' \\div ')">\[ \div \]</button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="除法2" flow="down">
+                  <button onclick="funcInput(' / ')">\[ / \]</button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="階乗" flow="down">
+                  <button onclick="funcInput(' ! ')">\[ ! \]</button>
+                </span>
+              </td>
+            </tr>
+          </table>
+          <table border="1">
+            <caption>
+              関係演算子
+            </caption>
+            <tr>
+              <td>
+                <span tooltip="等しい" flow="down">
+                  <button onclick="funcInput(' = ')">\[ = \]</button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="等しくない" flow="down">
+                  <button onclick="funcInput(' \\neq ')">\[ \neq \]</button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="ほぼ等しい1" flow="down">
+                  <button onclick="funcInput(' \\sim ')">\[ \sim \]</button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="ほぼ等しい2" flow="down">
+                  <button onclick="funcInput(' \\simeq ')">\[ \simeq \]</button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="ほぼ等しい3" flow="down">
+                  <button onclick="funcInput(' \\approx')">
+                    \[ \approx \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="ほぼ等しい4" flow="down">
+                  <button onclick="funcInput(' \\cong ')">\[ \cong \]</button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="より小さい" flow="down">
+                  <button onclick="funcInput(' \\lt ')">\[ \lt \]</button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="以下" flow="down">
+                  <button onclick="funcInput(' \\le ')">\[ \le \]</button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="非常に小さい" flow="down">
+                  <button onclick="funcInput(' \\ll ')">\[ \ll \]</button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="より大きい" flow="down">
+                  <button onclick="funcInput(' \\gt ')">\[ \gt \]</button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="以上" flow="down">
+                  <button onclick="funcInput(' \\ge ')">\[ \ge \]</button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="非常に大きい" flow="down">
+                  <button onclick="funcInput(' \\gg ')">\[ \gg \]</button>
+                </span>
+              </td>
+            </tr>
+          </table>
+          <table border="1">
+            <caption>
+              幾何学記号
+            </caption>
+            <tr>
+              <td>
+                <span tooltip="合同" flow="down">
+                  <button onclick="funcInput(' \\equiv ')">\[ \equiv \]</button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="角" flow="down">
+                  <button onclick="funcInput(' \\angle ')">\[ \angle \]</button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="角度" flow="down">
+                  <button onclick="funcInput(' \\circ ')">\[ \circ \]</button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="垂直" flow="down">
+                  <button onclick="funcInput(' \\perp ')">\[ \perp \]</button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="平行1" flow="down">
+                  <button onclick="funcInput(' /\/')">\[ /\!/ \]</button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="平行2" flow="down">
+                  <button onclick="funcInput(' \\parallel ')">
+                    \[ \parallel \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="弧" flow="down">
+                  <button onclick="funcInput(' \\frown ')">\[ \frown \]</button>
+                </span>
+              </td>
+            </tr>
+          </table>
+        </div>
+        <!-- 括弧 -->
+        <div id="brackets">
+          <table border="1">
+            <caption>
+              括弧
+            </caption>
+            <tr>
+              <td>
+                <span tooltip="(x)" flow="down">
+                  <button onclick="funcInput(' (x) ')">\[ (x) \]</button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="[x]" flow="down">
+                  <button onclick="funcInput(' [x] ')">\[ [a] \]</button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="{a}" flow="down">
+                  <button onclick="funcInput(' \\{ a \\} ')">
+                    \[ \{a\} \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="<x>" flow="down">
+                  <button onclick="funcInput(' \\langle x \\rangle ')">
+                    \[ \langle x \rangle \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="" flow="down">
+                  <button onclick="funcInput(' \\lfloor x \\rfloor ')">
+                    \[ \lfloor x \rfloor \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="" flow="down">
+                  <button onclick="funcInput(' \\lceil x \\rceil ')">
+                    \[ \lceil x \rceil \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="|x|" flow="down">
+                  <button onclick="funcInput(' \\left| x \\right| ')">
+                    \[ \left| x \right| \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="||x||" flow="down">
+                  <button onclick="funcInput(' \\|x\\| ')">\[ \|x\| \]</button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="括弧小" flow="down">
+                  <button onclick="funcInput(' (\\frac{1}{2}) ')">
+                    \[ ( \frac{1}{2} ) \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="括弧大" flow="down">
+                  <button
+                    onclick="funcInput(' \\left( \\frac{1}{2} \\right) ')"
+                  >
+                    \[ \left(\frac{1}{2} \right) \]
+                  </button>
+                </span>
+              </td>
+            </tr>
+          </table>
+          <table border="1">
+            <caption>
+              上括弧・下括弧
+            </caption>
+            <tr>
+              <td>
+                <span tooltip="上括弧" flow="down">
+                  <button onclick="funcInput(' \\overbrace{a + b + c} ')">
+                    \[ \overbrace{a + b + c} \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="下括弧" flow="down">
+                  <button onclick="funcInput(' \\underbrace{a + b + c}  ')">
+                    \[ \underbrace{a + b + c} \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="説明付き上括弧" flow="down">
+                  <button
+                    onclick="funcInput(' \\overbrace{a_1 + a_2 + \\cdots + a_n}^{n個} ')"
+                  >
+                    \[ \overbrace{a_1 + a_2 + \cdots + a_n}^{n個} \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="説明付き下括弧" flow="down">
+                  <button
+                    onclick="funcInput(' \\underbrace{a_1 + a_2 + \\cdots + a_n}_{n個} ')"
+                  >
+                    \[ \underbrace{a_1 + a_2 + \cdots + a_n}_{n個} \]
+                  </button>
+                </span>
+              </td>
+            </tr>
+          </table>
+        </div>
+        <!-- 分数 -->
+        <div id="fraction">
+          <table border="1">
+            <caption>
+              分数
+            </caption>
+            <tr>
+              <td>
+                <span tooltip="分数1" flow="down">
+                  <button onclick="funcInput(' {y}/{x} ')">\[ y/x \]</button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="分数2" flow="down">
+                  <button onclick="funcInput(' \\frac{y}{x} ')">
+                    \[ \frac{y}{x} \]
+                  </button>
+                </span>
+              </td>
+            </tr>
+          </table>
+          <table border="1">
+            <caption>
+              連分数
+            </caption>
+            <tr>
+              <td>
+                <span tooltip="連分数小" flow="down">
+                  <button
+                    onclick="funcInput(' \\frac{a+\\frac{b+c}{d+e}}{f+g+h} ')"
+                  >
+                    \[ \frac{a+\frac{b+c}{d+e}}{f+g+h} \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="連分数大" flow="down">
+                  <button
+                    onclick="funcInput(' \\frac{a+\\displaystyle\\frac{b+c}{d+e}}{f+g+h} ')"
+                  >
+                    \[ \frac{a+\displaystyle\frac{b+c}{d+e}}{f+g+h} \]
+                  </button>
+                </span>
+              </td>
+            </tr>
+          </table>
+        </div>
+        <!-- 論理 -->
+        <div id="logic">
+          <table border="1">
+            <caption>
+              論理記号
+            </caption>
+            <tr>
+              <td>
+                <span tooltip="命題：合意1" flow="down">
+                  <button onclick="funcInput(' \\to ')">\[ \to \]</button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="命題：合意1(逆)" flow="down">
+                  <button onclick="funcInput(' \\gets ')">\[ \gets \]</button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="命題：合意2" flow="down">
+                  <button onclick="funcInput(' \\Rightarrow ')">
+                    \[ \Rightarrow \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="命題：合意2(逆)" flow="down">
+                  <button onclick="funcInput(' \\Leftarrow ')">
+                    \[ \Leftarrow \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="命題：同値1" flow="down">
+                  <button onclick="funcInput(' \\leftrightarrow ')">
+                    \[ \leftrightarrow \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="命題：同値2" flow="down">
+                  <button onclick="funcInput(' \\Leftrightarrow ')">
+                    \[ \Leftrightarrow \]
+                  </button>
+                </span>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <span tooltip="命題：同値3" flow="down">
+                  <button onclick="funcInput(' \\iff ')">\[ \iff \]</button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="命題：同値4" flow="down">
+                  <button onclick="funcInput(' \\equiv ')">\[ \equiv \]</button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="命題：否定" flow="down">
+                  <button onclick="funcInput(' \\lnot ')">\[ \lnot \]</button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="論理積" flow="down">
+                  <button onclick="funcInput(' \\land ')">\[ \land \]</button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="論理和" flow="down">
+                  <button onclick="funcInput(' \\lor ')">\[ \lor \]</button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="排他的論理和1" flow="down">
+                  <button onclick="funcInput(' \\oplus ')">\[ \oplus \]</button>
+                </span>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <span tooltip="排他的論理和2" flow="down">
+                  <button onclick="funcInput(' \\underline{\\lor} ')">
+                    \[ \underline{\lor} \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="トートロジー(真)" flow="down">
+                  <button onclick="funcInput(' \\top ')">\[ \top \]</button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="矛盾(偽)" flow="down">
+                  <button onclick="funcInput(' \\bot ')">\[ \bot \]</button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="全称量化(すべての)" flow="down">
+                  <button onclick="funcInput(' \\forall ')">
+                    \[ \forall \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="存在量化(ある)" flow="down">
+                  <button onclick="funcInput(' \\exists ')">
+                    \[ \exists \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="存在しない" flow="down">
+                  <button onclick="funcInput(' \\not\\exists ')">
+                    \[ \not\exists\ \]
+                  </button>
+                </span>
+              </td>
+            </tr>
+          </table>
+          <table border="1">
+            <caption>
+              サンプル
+            </caption>
+            <td>\[ \displaystyle \lim_{x\to a}f(x)=b \]</td>
+            <td>
+              <span tooltip="関数の収束をε-δ論法で表記" flow="down">
+                <button
+                  onclick="funcInput(' \\begin{align} {}^\\forall \\varepsilon \\gt 0, {}^\\exists \\delta \\gt 0 ~~ \\mathrm{s.t.} \\\\ {}^\\forall x \\in \\mathbb{R}, 0 \\gt |x-a| \\gt \\delta \\Rightarrow |f(x)-b| \\gt \\varepsilon \\end{align} ')"
+                >
+                  \[ {}^\forall \varepsilon \gt 0, {}^\exists \delta \gt 0 ~~
+                  \mathrm{s.t.} \] \[ {}^\forall x \in \mathbb{R}, 0 \gt |x-a|
+                  \gt \delta \Rightarrow |f(x)-b| \gt \varepsilon \]
+                </button>
+              </span>
+            </td>
+          </table>
+        </div>
+        <!-- 集合 -->
+        <div id="set">
+          <table border="1">
+            <caption>
+              集合や要素の関係
+            </caption>
+            <tr>
+              <td>
+                <span tooltip="属する" flow="down">
+                  <button onclick="funcInput(' \\in ')">\[ \in \]</button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="属する(逆方向)" flow="down">
+                  <button onclick="funcInput(' \\ni ')">\[ \ni \]</button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="要素の否定" flow="down">
+                  <button onclick="funcInput(' \\notin ')">\[ \notin \]</button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="部分集合1" flow="down">
+                  <button onclick="funcInput(' \\subset ')">
+                    \[ \subset \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="部分集合1(逆)" flow="down">
+                  <button onclick="funcInput(' \\supset ')">
+                    \[ \supset \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="部分集合2" flow="down">
+                  <button onclick="funcInput(' \\subseteq ')">
+                    \[ \subseteq \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="部分集合2(逆)" flow="down">
+                  <button onclick="funcInput(' \\supseteq ')">
+                    \[ \supseteq \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="部分集合の否定" flow="down">
+                  <button onclick="funcInput(' \\not\\subset ')">
+                    \[ \not\subset \]
+                  </button>
+                </span>
+              </td>
+            </tr>
+          </table>
+          <table border="1">
+            <caption>
+              集合の演算
+            </caption>
+            <tr>
+              <td>
+                <span tooltip="和集合" flow="down">
+                  <button onclick="funcInput(' \\cup ')">\[ \cup \]</button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="積集合" flow="down">
+                  <button onclick="funcInput(' \\cap ')">\[ \cap \]</button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="差集合" flow="down">
+                  <button onclick="funcInput(' \\backslash ')">
+                    \[ \backslash \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="補集合1" flow="down">
+                  <button onclick="funcInput(' A^c ')">\[ A^c \]</button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="補集合2" flow="down">
+                  <button onclick="funcInput(' \\overline{A} ')">
+                    \[ \overline{A} \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="空集合" flow="down">
+                  <button onclick="funcInput(' \\emptyset ')">
+                    \[ \emptyset \]
+                  </button>
+                </span>
+              </td>
+            </tr>
+          </table>
+          <table border="1">
+            <caption>
+              ド・モルガンの法則
+            </caption>
+            <tr>
+              <td>
+                <span tooltip="ド・モルガンの法則1" flow="down">
+                  <button
+                    onclick="funcInput(' \\overline{A \\cup B}=\\overline{A}\\cap\\overline{B} ')"
+                  >
+                    \[ \overline{A \cup B}=\overline{A}\cap\overline{B} \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="ド・モルガンの法則2" flow="down">
+                  <button
+                    onclick="funcInput(' \\overline{A \\cap B}=\\overline{A}\\cup\\overline{B} ')"
+                  >
+                    \[ \overline{A \cap B}=\overline{A}\cup\overline{B} \]
+                  </button>
+                </span>
+              </td>
+            </tr>
+          </table>
+          <table border="1">
+            <caption>
+              特別な集合
+            </caption>
+            <tr>
+              <td>
+                <span tooltip="自然数全体の集合" flow="down">
+                  <button onclick="funcInput(' \\mathbb{N} ')">
+                    \[ \mathbb{N} \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="整数全体の集合" flow="down">
+                  <button onclick="funcInput(' \\mathbb{Z} ')">
+                    \[ \mathbb{Z} \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="有理数全体の集合" flow="down">
+                  <button onclick="funcInput(' \\mathbb{Q} ')">
+                    \[ \mathbb{Q} \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="実数全体の集合" flow="down">
+                  <button onclick="funcInput(' \\mathbb{R} ')">
+                    \[ \mathbb{R} \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="複素数全体の集合" flow="down">
+                  <button onclick="funcInput(' \\mathbb{C} ')">
+                    \[ \mathbb{C} \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="四元数全体の集合" flow="down">
+                  <button onclick="funcInput(' \\mathbb{H} ')">
+                    \[ \mathbb{H} \]
+                  </button>
+                </span>
+              </td>
+            </tr>
+          </table>
+          <table border="1">
+            <caption>
+              無限集合濃度
+            </caption>
+            <tr>
+              <td>
+                <span tooltip="アレフ" flow="down">
+                  <button onclick="funcInput(' \\aleph ')">\[ \aleph \]</button>
+                </span>
+              </td>
+              <td>
+                <span
+                  tooltip="自然数全体の集合の濃度，アレフ・ゼロ"
+                  flow="down"
+                >
+                  <button onclick="funcInput(' \\aleph_0 ')">
+                    \[ \aleph_0 \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="一般のアレフ数" flow="down">
+                  <button onclick="funcInput(' \\aleph_{\\alpha} ')">
+                    \[ \aleph_{\alpha} \]
+                  </button>
+                </span>
+              </td>
+            </tr>
+          </table>
+        </div>
+        <!-- 順序/組合せ -->
+        <div id="permutationAndCombination">
+          <table border="1">
+            <caption>
+              順列
+            </caption>
+            <tr>
+              <td>
+                <span tooltip="順列" flow="down">
+                  <button onclick="funcInput(' {}_n P_k ')">
+                    \[ {}_n P_k \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="順列(ローマン体)" flow="down">
+                  <button onclick="funcInput(' {}_n \\mathrm{P}_k ')">
+                    \[ {}_n \mathrm{P}_k \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="順列の計算" flow="down">
+                  <button
+                    onclick="funcInput(' \\displaystyle {}_n P_k = n \\times (n-1) \\times \\cdots \\times (n-k+1) = \\frac{n!}{(n-k)!} ')"
+                  >
+                    \[ \displaystyle {}_n P_k = n \times (n-1) \times \cdots
+                    \times (n-k+1) = \frac{n!}{(n-k)!} \]
+                  </button>
+                </span>
+              </td>
+            </tr>
+          </table>
+          <table border="1">
+            <caption>
+              重複順列
+            </caption>
+            <tr>
+              <td>
+                <span tooltip="重複順列" flow="down">
+                  <button onclick="funcInput(' {}_n \\Pi_k ')">
+                    \[ {}_n \Pi_k \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="重複順列の計算" flow="down">
+                  <button
+                    onclick="funcInput(' {}_n \\Pi_k = \\underbrace{n \\times n \\times \\cdots \\times n}_{k} = n^k ')"
+                  >
+                    \[ {}_n \Pi_k = \underbrace{n \times n \times \cdots \times
+                    n}_{k} = n^k \]
+                  </button>
+                </span>
+              </td>
+            </tr>
+          </table>
+          <table border="1">
+            <caption>
+              組み合わせ
+            </caption>
+            <tr>
+              <td>
+                <span tooltip="組み合わせ" flow="down">
+                  <button onclick="funcInput(' {}_n C_k ')">
+                    \[ {}_n C_k \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="組み合わせ(ローマン体)" flow="down">
+                  <button onclick="funcInput(' {}_n \\mathrm{C}_k ')">
+                    \[ {}_n \mathrm{C}_k \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="二項係数" flow="down">
+                  <button onclick="funcInput(' { n \\choose k } ')">
+                    \[ { n \choose k } \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="組み合わせの計算" flow="down">
+                  <button
+                    onclick="funcInput(' \\displaystyle {}_n C_k = { n \\choose k } = \\frac{n!}{k! (n-k)!} = \\frac{{}_n P_k}{k!} ')"
+                  >
+                    \[ \displaystyle {}_n C_k = { n \choose k } = \frac{n!}{k!
+                    (n-k)!} = \frac{{}_n P_k}{k!} \]
+                  </button>
+                </span>
+              </td>
+            </tr>
+          </table>
+          <table border="1">
+            <caption>
+              重複組み合わせ
+            </caption>
+            <tr>
+              <td>
+                <span tooltip="重複組み合わせ" flow="down">
+                  <button onclick="funcInput(' {}_n H_k ')">
+                    \[ {}_n H_k \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="組み合わせ(ローマン体)" flow="down">
+                  <button onclick="funcInput(' {}_n \\mathrm{H}_k ')">
+                    \[ {}_n \mathrm{H}_k \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="重複組み合わせの計算" flow="down">
+                  <button
+                    onclick="funcInput(' \\displaystyle {}_n H_k = {}_{n+k-1} C_k = \\frac{(n+k-1)!}{k! (n-1)!} ')"
+                  >
+                    \[ \displaystyle {}_n H_k = {}_{n+k-1} C_k =
+                    \frac{(n+k-1)!}{k! (n-1)!} \]
+                  </button>
+                </span>
+              </td>
+            </tr>
+          </table>
+        </div>
+        <!-- 総和/総乗 -->
+        <div id="summationAndProduct">
+          <table border="1">
+            <caption>
+              総和
+            </caption>
+            <tr>
+              <td>
+                <span tooltip="総和1" flow="down">
+                  <button onclick="funcInput(' \\sum ')">\[ \sum \]</button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="総和2" flow="down">
+                  <button onclick="funcInput(' \\sum_{i=1}^{n}x_i ')">
+                    \[ \sum_{i=1}^{n}x_i \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="総和3" flow="down">
+                  <button
+                    onclick="funcInput(' \\displaystyle \\sum_{i=1}^\\infty x_i = x_1+x_2+x_3+ \\cdots ')"
+                  >
+                    \[ \displaystyle \sum_{i=1}^\infty x_i = x_1+x_2+x_3+ \cdots
+                    \]
+                  </button>
+                </span>
+              </td>
+            </tr>
+          </table>
+          <table border="1">
+            <caption>
+              総乗
+            </caption>
+            <tr>
+              <td>
+                <span tooltip="総乗1" flow="down">
+                  <button onclick="funcInput(' \\prod ')">\[ \prod \]</button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="総乗2" flow="down">
+                  <button
+                    onclick="funcInput(' \\displaystyle \\prod_{i=1}^n x_i = x_1 \\times x_2 \\times \\cdots \\times x_n ')"
+                  >
+                    \[ \displaystyle \prod_{i=1}^n x_i = x_1 \times x_2 \times
+                    \cdots \times x_n \]
+                  </button>
+                </span>
+              </td>
+            </tr>
+          </table>
+          <table border="1">
+            <caption>
+              サンプル
+            </caption>
+            <tr>
+              <td>
+                <span tooltip="和の公式1" flow="down">
+                  <button
+                    onclick="funcInput(' \\displaystyle \\sum_{k=1}^{n} k = \\frac{1}{2}n(n+1) ')"
+                  >
+                    \[ \displaystyle \sum_{k=1}^{n} k = \frac{1}{2}n(n+1) \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="和の公式2" flow="down">
+                  <button
+                    onclick="funcInput(' \\displaystyle \\sum_{k=1}^{n} k^2 = \\frac{1}{6}n(n+1)(2n+1) ')"
+                  >
+                    \[ \displaystyle \sum_{k=1}^{n} k^2 =
+                    \frac{1}{6}n(n+1)(2n+1) \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="和の公式3" flow="down">
+                  <button
+                    onclick="funcInput(' \\displaystyle \\sum_{k=1}^{n} k^3 = \\left\\{ \\frac{1}{2}n(n+1) \\right\\\}^2 ')"
+                  >
+                    \[ \displaystyle \sum_{k=1}^{n} k^3 = \left\{
+                    \frac{1}{2}n(n+1) \right\}^2 \]
+                  </button>
+                </span>
+              </td>
+            </tr>
+          </table>
+          <table border="1">
+            <tr>
+              <td>
+                <span tooltip="sinの無限乗積展開" flow="down">
+                  <button
+                    onclick="funcInput(' \\displaystyle \\sin(\\pi z) = \\pi z \\prod_{n=1}^\\infty \\left( 1 - \\frac{z^2}{n^2} \\right) ')"
+                  >
+                    \[ \displaystyle \sin(\pi z) = \pi z \prod_{n=1}^\infty
+                    \left( 1 - \frac{z^2}{n^2} \right) \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="cosの無限乗積展開" flow="down">
+                  <button
+                    onclick="funcInput(' \\displaystyle \\cos(\\pi z) = \\prod_{n=1}^\\infty \\left\\{ 1 - \\frac{z^2}{\\left( n - \\frac{1}{2} \\right)^2} \\right\\\} ')"
+                  >
+                    \[ \displaystyle \cos(\pi z) = \prod_{n=1}^\infty \left\{ 1
+                    - \frac{z^2}{\left( n - \frac{1}{2} \right)^2} \right\} \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="ウォリス積" flow="down">
+                  <button
+                    onclick="funcInput(' \\displaystyle \\prod_{n=1}^\\infty \\frac{(2n)^2}{(2n-1)(2n+1)} = \\frac{\\pi}{2} ')"
+                  >
+                    \[ \displaystyle \prod_{n=1}^\infty
+                    \frac{(2n)^2}{(2n-1)(2n+1)} = \frac{\pi}{2} \]
+                  </button>
+                </span>
+              </td>
+            </tr>
+          </table>
+        </div>
+        <!-- 累乗/指数/対数 -->
+        <div id="radicalAndEexponentAndLogarithm">
+          <table border="1">
+            <caption>
+              根号
+            </caption>
+            <tr>
+              <td>
+                <span tooltip="根号 例1" flow="down">
+                  <button onclick="funcInput(' \\sqrt{x} ')">
+                    \[ \sqrt{x} \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="根号 例2" flow="down">
+                  <button onclick="funcInput(' \\sqrt[n]{x} ')">
+                    \[ \sqrt[n]{x} \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="根号 例3" flow="down">
+                  <button onclick="funcInput(' \\sqrt [n]{a + b} ')">
+                    \[ \sqrt [n]{a + b} \]
+                  </button>
+                </span>
+              </td>
+            </tr>
+          </table>
+          <table border="1">
+            <caption>
+              指数
+            </caption>
+            <tr>
+              <td>
+                <span tooltip="べき乗 例1" flow="down">
+                  <button onclick="funcInput(' a^x ')">\[ a^x \]</button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="べき乗 例2" flow="down">
+                  <button onclick="funcInput(' a^{x + y} ')">
+                    \[ a^{x + y} \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="べき乗 例3" flow="down">
+                  <button onclick="funcInput(' a^{x^y} ')">
+                    \[ a^{x^y} \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="指数関数1" flow="down">
+                  <button onclick="funcInput(' \\exp(x) ')">
+                    \[ \exp(x) \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="指数関数2" flow="down">
+                  <button onclick="funcInput(' e^x ')">\[ e^x \]</button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="指数関数3" flow="down">
+                  <button onclick="funcInput(' \\mathrm{e}^x ')">
+                    \[ \mathrm{e}^x \]
+                  </button>
+                </span>
+              </td>
+            </tr>
+          </table>
+          <table border="1">
+            <caption>
+              対数
+            </caption>
+            <tr>
+              <td>
+                <span tooltip="対数1" flow="down">
+                  <button onclick="funcInput(' \\log x ')">\[ \log x \]</button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="対数2" flow="down">
+                  <button onclick="funcInput(' \\log_{10}x ')">
+                    \[ \log_{10}x \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="対数3" flow="down">
+                  <button onclick="funcInput(' \\log_{e}x ')">
+                    \[ \log_{e}x \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="自然対数" flow="down">
+                  <button onclick="funcInput(' \\ln x ')">\[ \ln x \]</button>
+                </span>
+              </td>
+            </tr>
+          </table>
+        </div>
+        <!-- 複素数 -->
+        <div id="complexNumber">
+          <table border="1">
+            <caption>
+              複素数
+            </caption>
+            <tr>
+              <td>
+                <span tooltip="複素数1" flow="down">
+                  <button onclick="funcInput(' i^2 = -1 ')">
+                    \[ i^2 = -1 \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="複素数2" flow="down">
+                  <button onclick="funcInput(' \\bar{z} ')">
+                    \[ \bar{z} \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="複素数3" flow="down">
+                  <button onclick="funcInput(' \\bar{\\bar{z}} = z ')">
+                    \[ \bar{\bar{z}} = z \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="複素数4" flow="down">
+                  <button onclick="funcInput(' z = x + yi ')">
+                    \[ z = x + yi \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="複素数5" flow="down">
+                  <button onclick="funcInput(' |z| = \\sqrt{x^2 + y^2} ')">
+                    \[ |z| = \sqrt{x^2 + y^2} \]
+                  </button>
+                </span>
+              </td>
+            </tr>
+          </table>
+          <table border="1">
+            <tr>
+              <td>
+                <span tooltip="複素数 例1" flow="down">
+                  <button onclick="funcInput(' \\arg (z) ')">
+                    \[ \arg (z) \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="複素数 例2" flow="down">
+                  <button onclick="funcInput(' z = re^{i\\theta} ')">
+                    \[ z = re^{i\theta} \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="複素数 例3" flow="down">
+                  <button onclick="funcInput(' \\Re z ')">\[ \Re z \]</button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="複素数 例4" flow="down">
+                  <button onclick="funcInput(' \\Im z ')">\[ \Im z \]</button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="複素数 例5" flow="down">
+                  <button onclick="funcInput(' \\mathrm{Re} z ')">
+                    \[ \mathrm{Re} z \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="複素数 例6" flow="down">
+                  <button onclick="funcInput(' \\mathrm{Im} z ')">
+                    \[ \mathrm{Im} z \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="複素数 例7" flow="down">
+                  <button onclick="funcInput(' \\mathbb{C} ')">
+                    \[ \mathbb{C} \]
+                  </button>
+                </span>
+              </td>
+            </tr>
+          </table>
+          <table border="1">
+            <caption>
+              立法根
+            </caption>
+            <tr>
+              <td>
+                <span tooltip="立方根1" flow="down">
+                  <button
+                    onclick="funcInput(' \\displaystyle \\omega = \\frac{-1 + \\sqrt{3}i}{2} ')"
+                  >
+                    \[ \displaystyle \omega = \frac{-1 + \sqrt{3}i}{2} \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="立方根2" flow="down">
+                  <button onclick="funcInput(' 1 + \\omega + \\omega^2 = 0 ')">
+                    \[ 1 + \omega + \omega^2 = 0 \]
+                  </button>
+                </span>
+              </td>
+            </tr>
+          </table>
+        </div>
+        <!-- 三角関数 -->
+        <div id="trigonometricFunction">
+          <table border="1">
+            <caption>
+              三角関数
+            </caption>
+            <tr>
+              <td>
+                <span tooltip="正弦" flow="down">
+                  <button onclick="funcInput(' \\sin x ')">\[ \sin x \]</button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="余弦" flow="down">
+                  <button onclick="funcInput(' \\cos x ')">\[ \cos x \]</button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="正接" flow="down">
+                  <button onclick="funcInput(' \\tan x ')">\[ \tan x \]</button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="余割" flow="down">
+                  <button onclick="funcInput(' \\csc x ')">\[ \csc x \]</button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="正割" flow="down">
+                  <button onclick="funcInput(' \\sec x ')">\[ \sec x \]</button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="余接" flow="down">
+                  <button onclick="funcInput(' \\cot x ')">\[ \cot x \]</button>
+                </span>
+              </td>
+            </tr>
+          </table>
+          <table border="1">
+            <tr>
+              <td>
+                <span tooltip="余割の定義式" flow="down">
+                  <button
+                    onclick="funcInput(' \\csc \\theta = \\frac{1}{\\sin \\theta} ')"
+                  >
+                    \[ \csc \theta = \frac{1}{\sin \theta} \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="正割の定義式" flow="down">
+                  <button
+                    onclick="funcInput(' \\sec \\theta = \\frac{1}{\\cos \\theta} ')"
+                  >
+                    \[ \sec \theta = \frac{1}{\cos \theta} \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="余接の定義式" flow="down">
+                  <button
+                    onclick="funcInput(' \\cot \\theta = \\frac{1}{\\tan \\theta} = \\frac{\\cos \\theta}{\\sin \\theta} ')"
+                  >
+                    \[ \cot \theta = \frac{1}{\tan \theta} = \frac{\cos
+                    \theta}{\sin \theta} \]
+                  </button>
+                </span>
+              </td>
+            </tr>
+          </table>
+          <table border="1">
+            <tr>
+              <td>
+                <span tooltip="三角関数公式1" flow="down">
+                  <button
+                    onclick="funcInput(' \\sin^2 \\theta + \\cos^2 \\theta =1 ')"
+                  >
+                    \[ \sin^2 \theta + \cos^2 \theta =1 \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="三角関数公式2" flow="down">
+                  <button
+                    onclick="funcInput(' \\sin (\\alpha \\pm \\beta) = \\sin \\alpha \\cos \\beta \\pm \\cos \\alpha \\sin \\beta ')"
+                  >
+                    \[ \sin (\alpha \pm \beta) = \sin \alpha \cos \beta \pm \cos
+                    \alpha \sin \beta \]
+                  </button>
+                </span>
+              </td>
+            </tr>
+          </table>
+          <table border="1">
+            <tr>
+              <td>
+                <span tooltip="三角関数公式3" flow="down">
+                  <button
+                    onclick="funcInput(' \\displaystyle \\tan (x \\pm y) =\\frac{\\tan x \\pm \\tan y}{1 \\mp \\tan x \\tan y} ')"
+                  >
+                    \[ \displaystyle \tan (x \pm y) =\frac{\tan x \pm \tan y}{1
+                    \mp \tan x \tan y} \]
+                  </button>
+                </span>
+              </td>
+            </tr>
+          </table>
+          <table border="1">
+            <caption>
+              逆三角関数
+            </caption>
+            <tr>
+              <td>
+                <span tooltip="逆正弦1" flow="down">
+                  <button onclick="funcInput(' \\arcsin x ')">
+                    \[ \arcsin x \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="逆余弦1" flow="down">
+                  <button onclick="funcInput(' \\arccos x ')">
+                    \[ \arccos x \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="逆正接1" flow="down">
+                  <button onclick="funcInput(' \\arctan x ')">
+                    \[ \arctan x \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="逆正弦2" flow="down">
+                  <button onclick="funcInput(' \\mathrm{Arcsin} x ')">
+                    \[ \mathrm{Arcsin} x \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="逆余弦2" flow="down">
+                  <button onclick="funcInput(' \\mathrm{Arcsin} x ')">
+                    \[ \mathrm{Arcsin} x \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="逆正接2" flow="down">
+                  <button onclick="funcInput(' \\mathrm{Arcsin} x ')">
+                    \[ \mathrm{Arcsin} x \]
+                  </button>
+                </span>
+              </td>
+            </tr>
+          </table>
+          <table border="1">
+            <tr>
+              <td>
+                <span tooltip="逆正弦3" flow="down">
+                  <button
+                    onclick="funcInput(' \\arcsin \\theta = \\sin^{-1} \\theta ')"
+                  >
+                    \[ \arcsin \theta = \sin^{-1} \theta \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="逆余弦3" flow="down">
+                  <button
+                    onclick="funcInput(' \\arccos \\theta = \\cos^{-1} \\theta ')"
+                  >
+                    \[ \arccos \theta = \cos^{-1} \theta \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="逆正接3" flow="down">
+                  <button
+                    onclick="funcInput(' \\arctan \\theta = \\tan^{-1} \\theta ')"
+                  >
+                    \[ \arctan \theta = \tan^{-1} \theta \]
+                  </button>
+                </span>
+              </td>
+            </tr>
+          </table>
+          <table border="1">
+            <caption>
+              双曲線関数
+            </caption>
+            <tr>
+              <td>
+                <span tooltip="双曲線正弦" flow="down">
+                  <button onclick="funcInput(' \\sinh x ')">
+                    \[ \sinh x \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="双曲線余弦" flow="down">
+                  <button onclick="funcInput(' \\cosh x ')">
+                    \[ \cosh x \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="双曲線正接" flow="down">
+                  <button onclick="funcInput(' \\tanh x ')">
+                    \[ \tanh x \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="双曲線余接" flow="down">
+                  <button onclick="funcInput(' \\coth x ')">
+                    \[ \coth x \]
+                  </button>
+                </span>
+              </td>
+            </tr>
+          </table>
+          <table border="1">
+            <tr>
+              <td>
+                <span tooltip="双曲線正弦の定義式" flow="down">
+                  <button
+                    onclick="funcInput(' \\displaystyle \\sinh x = \\frac{e^x - e^{-x}}{2} ')"
+                  >
+                    \[ \displaystyle \sinh x = \frac{e^x - e^{-x}}{2} \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="双曲線余弦の定義式" flow="down">
+                  <button
+                    onclick="funcInput(' \\displaystyle \\cosh x = \\frac{e^x + e^{-x}}{2} ')"
+                  >
+                    \[ \displaystyle \cosh x = \frac{e^x + e^{-x}}{2} \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="双曲線正接の定義式" flow="down">
+                  <button
+                    onclick="funcInput(' \\displaystyle \\tanh = \\frac{\\sinh x}{\\cosh x} ')"
+                  >
+                    \[ \displaystyle \tanh = \frac{\sinh x}{\cosh x} \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="双曲線余接の定義式" flow="down">
+                  <button
+                    onclick="funcInput(' \\displaystyle \\coth = \\frac{1}{\\tanh x} ')"
+                  >
+                    \[ \displaystyle \coth = \frac{1}{\tanh x} \]
+                  </button>
+                </span>
+              </td>
+            </tr>
+          </table>
+          <table border="1">
+            <caption>
+              逆双曲線関数
+            </caption>
+            <tr>
+              <td>
+                <span tooltip="逆双曲線正弦" flow="down">
+                  <button
+                    onclick="funcInput(' \\sinh^{-1} x = \\ln \\left( x + \\sqrt{x^2 + 1} \\right) ')"
+                  >
+                    \[ \sinh^{-1} x = \ln \left( x + \sqrt{x^2 + 1} \right) \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="逆双曲線余弦" flow="down">
+                  <button
+                    onclick="funcInput(' \\cosh^{-1} x = \\ln \\left( x \\pm \\sqrt{x^2 - 1} \\right) ')"
+                  >
+                    \[ \cosh^{-1} x = \ln \left( x \pm \sqrt{x^2 - 1} \right) \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="逆双曲線正接" flow="down">
+                  <button
+                    onclick="funcInput(' \\displaystyle \\tanh = \\frac{1}{2} \\ln \\left( \\frac{1 + x}{1 - x} \\right) ')"
+                  >
+                    \[ \displaystyle \tanh = \frac{1}{2} \ln \left( \frac{1 +
+                    x}{1 - x} \right) \]
+                  </button>
+                </span>
+              </td>
+            </tr>
+          </table>
+        </div>
+        <!-- 極限 -->
+        <div id="limit">
+          <table border="1">
+            <caption>
+              極限
+            </caption>
+            <tr>
+              <td>
+                <span tooltip="極限" flow="down">
+                  <button
+                    onclick="funcInput(' \\lim_{n \\to \\infty} \\frac{1}{n} = 0 ')"
+                  >
+                    \[ \lim_{n \to \infty} \frac{1}{n} = 0 \]
+                  </button>
+                </span>
+              </td>
+            </tr>
+          </table>
+          <table border="1">
+            <caption>
+              上極限・下極限
+            </caption>
+            <tr>
+              <td>
+                <span tooltip="上極限" flow="down">
+                  <button
+                    onclick="funcInput(' \\limsup_{n \\to \\infty} a_n ')"
+                  >
+                    \[ \limsup_{n \to \infty} a_n \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="下極限" flow="down">
+                  <button
+                    onclick="funcInput(' \\liminf_{n \\to \\infty} a_n ')"
+                  >
+                    \[ \liminf_{n \to \infty} a_n \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="上極限の定義" flow="down">
+                  <button
+                    onclick="funcInput(' \\overline{\\lim}_{n \\to \\infty} a_n = \\lim_{n \\to \\infty} \\left( \\sup_{k \\ge n} a_k \\right) ')"
+                  >
+                    \[ \overline{\lim}_{n \to \infty} a_n = \lim_{n \to \infty}
+                    \left( \sup_{k \ge n} a_k \right) \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="下極限の定義" flow="down">
+                  <button
+                    onclick="funcInput(' \\underline{\\lim}_{n \\to \\infty} a_n = \\lim_{n \\to \\infty} \\left( \\inf_{k \\ge n} a_k \\right) ')"
+                  >
+                    \[ \underline{\lim}_{n \to \infty} a_n = \lim_{n \to \infty}
+                    \left( \inf_{k \ge n} a_k \right) \]
+                  </button>
+                </span>
+              </td>
+            </tr>
+          </table>
+        </div>
+        <!-- 微分 -->
+        <div id="differential">
+          <table border="1">
+            <caption>
+              ラグランジュ記法
+            </caption>
+            <tr>
+              <td>
+                <span tooltip="1階微分" flow="down">
+                  <button onclick="funcInput(' f^{\\prime}(x) ')">
+                    \[ f^{\prime}(x) \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="2階微分" flow="down">
+                  <button onclick="funcInput(' f^{\\prime\\prime}(x) ')">
+                    \[ f^{\prime\prime}(x) \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="n階微分" flow="down">
+                  <button onclick="funcInput(' f^{(n)}(x) ')">
+                    \[ f^{(n)}(x) \]
+                  </button>
+                </span>
+              </td>
+            </tr>
+          </table>
+          <table border="1">
+            <caption>
+              ライプニッツ記法
+            </caption>
+            <tr>
+              <td>
+                <span tooltip="ライプニッツ記法1" flow="down">
+                  <button onclick="funcInput(' \\frac{dy}{dx} ')">
+                    \[ \frac{dy}{dx} \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="ライプニッツ記法2" flow="down">
+                  <button
+                    onclick="funcInput(' \\frac{ \\mathrm{d} y}{ \\mathrm{d} x} ')"
+                  >
+                    \[ \frac{ \mathrm{d} y}{ \mathrm{d} x} \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="ライプニッツ記法3" flow="down">
+                  <button onclick="funcInput(' \\frac{d^n y}{dx^n} ')">
+                    \[ \frac{d^n y}{dx^n} \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="ある点における微分係数" flow="down">
+                  <button
+                    onclick="funcInput(' \\left. \\frac{dy}{dx} \\right|_{x=a} ')"
+                  >
+                    \[ \left. \frac{dy}{dx} \right|_{x=a} \]
+                  </button>
+                </span>
+              </td>
+            </tr>
+          </table>
+          <table border="1">
+            <caption>
+              ニュートン記法
+            </caption>
+            <tr>
+              <td>
+                <span tooltip="ニュートン記法 例1" flow="down">
+                  <button
+                    onclick="funcInput(' \\dot{y} = \\frac{dy}{dt} = v ')"
+                  >
+                    \[ \dot{y} = \frac{dy}{dt} = v \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="ニュートン記法 例2" flow="down">
+                  <button
+                    onclick="funcInput(' \\ddot{y} = \\frac{d^2y}{dt^2} =a ')"
+                  >
+                    \[ \ddot{y} = \frac{d^2y}{dt^2} =a \]
+                  </button>
+                </span>
+              </td>
+            </tr>
+          </table>
+          <table border="1">
+            <caption>
+              オイラー記法
+            </caption>
+            <tr>
+              <td>
+                <span tooltip="オイラー記法1" flow="down">
+                  <button onclick="funcInput(' Df ')">\[ Df \]</button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="オイラー記法2" flow="down">
+                  <button onclick="funcInput(' D_x y ')">\[ D_x y \]</button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="微分の定義" flow="down">
+                  <button
+                    onclick="funcInput(' f^{\\prime}(x) = \\frac{df}{dx} = \\lim_{h \\to 0} \\frac{f(x+h) - f(x)}{h} ')"
+                  >
+                    \[ f'(x) = \frac{df}{dx} = \lim_{h \to 0} \frac{f(x+h) -
+                    f(x)}{h} \]
+                  </button>
+                </span>
+              </td>
+            </tr>
+          </table>
+          <table border="1">
+            <caption>
+              偏微分
+            </caption>
+            <tr>
+              <td>
+                <span tooltip="∂" flow="down">
+                  <button onclick="funcInput(' \\partial ')">
+                    \[ \partial \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="偏微分 例1" flow="down">
+                  <button
+                    onclick="funcInput(' \\frac{\\partial f}{\\partial x} =f_x ')"
+                  >
+                    \[ \frac{\partial f}{\partial x} =f_x \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="偏微分 例2" flow="down">
+                  <button
+                    onclick="funcInput(' \\frac{\\partial}{\\partial y} \\left( \\frac{\\partial f}{\\partial x} \\right) = f_{xy} ')"
+                  >
+                    \[ \frac{\partial}{\partial y} \left( \frac{\partial
+                    f}{\partial x} \right) = f_{xy} \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="偏微分 例3" flow="down">
+                  <button
+                    onclick="funcInput(' \\frac{\\partial^n f}{\\partial x^n} ')"
+                  >
+                    \[ \frac{\partial^n f}{\partial x^n} \]
+                  </button>
+                </span>
+              </td>
+            </tr>
+          </table>
+          <table border="1">
+            <caption>
+              ベクトルの微分演算
+            </caption>
+            <tr>
+              <td>
+                <span tooltip="∇" flow="down">
+                  <button onclick="funcInput(' \\nabla ')">\[ \nabla \]</button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="ベクトル微分演算 例1" flow="down">
+                  <button
+                    onclick="funcInput(' \\nabla = \\left( \\frac{\\partial}{\\partial x}, \\frac{\\partial}{\\partial y}, \\frac{\\partial}{\\partial z} \\right) ')"
+                  >
+                    \[ \nabla = \left( \frac{\partial}{\partial x},
+                    \frac{\partial}{\partial y}, \frac{\partial}{\partial z}
+                    \right) \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="ベクトル微分演算 例2" flow="down">
+                  <button
+                    onclick="funcInput(' \\mathrm{grad} \\phi = \\nabla \\phi ')"
+                  >
+                    \[ \mathrm{grad} \phi = \nabla \phi \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="ベクトル微分演算 例3" flow="down">
+                  <button
+                    onclick="funcInput(' \\mathrm{div} \\mathbf{A} = \\nabla \\cdot \\mathbf{A} ')"
+                  >
+                    \[ \mathrm{div} \mathbf{A} = \nabla \cdot \mathbf{A} \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="ベクトル微分演算 例4" flow="down">
+                  <button
+                    onclick="funcInput(' \\mathrm{rot} \\mathbf{A} = \\nabla \\times \\mathbf{A} ')"
+                  >
+                    \[ \mathrm{rot} \mathbf{A} = \nabla \times \mathbf{A} \]
+                  </button>
+                </span>
+              </td>
+            </tr>
+          </table>
+          <table border="1">
+            <tr>
+              <td>
+                <span tooltip="ベクトル微分演算 例5" flow="down">
+                  <button onclick="funcInput(' \\Delta = \\nabla^2 ')">
+                    \[ \Delta = \nabla^2 \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="ベクトル微分演算 例6" flow="down">
+                  <button
+                    onclick="funcInput(' \\Delta \\phi = \\nabla \\cdot \\nabla \\phi = \\left( \\frac{\\partial^2}{\\partial x^2} + \\frac{\\partial^2}{\\partial y^2} + \\frac{\\partial^2}{\\partial z^2} \\right) \\phi ')"
+                  >
+                    \[ \Delta \phi = \nabla \cdot \nabla \phi = \left(
+                    \frac{\partial^2}{\partial x^2} + \frac{\partial^2}{\partial
+                    y^2} + \frac{\partial^2}{\partial z^2} \right) \phi \]
+                  </button>
+                </span>
+              </td>
+            </tr>
+          </table>
+        </div>
+        <!-- 積分 -->
+        <div id="integral">
+          <table border="1">
+            <caption>
+              積分
+            </caption>
+            <tr>
+              <td>
+                <span tooltip="積分1" flow="down">
+                  <button onclick="funcInput(' \\int f(x)dx ')">
+                    \[ \int f(x)dx \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="積分2" flow="down">
+                  <button onclick="funcInput(' \\int_0^{\\infty} f(x)dx ')">
+                    \[ \int_0^{\infty} f(x)dx \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="積分 例" flow="down">
+                  <button
+                    onclick="funcInput(' \\begin{align*} \\int_1^2 x^2 dx &= \\left[ \\frac{x^3}{3} \\right]_1^2 \\\\&= \\frac{8}{3} - \\frac{1}{3} \\\\&= \\frac{7}{3} \\end{align*} ')"
+                  >
+                    \[ \begin{align*} \int_1^2 x^2 dx &= \left[ \frac{x^3}{3}
+                    \right]_1^2 \\ &= \frac{8}{3} - \frac{1}{3} \\ &=
+                    \frac{7}{3} \end{align*} \]
+                  </button>
+                </span>
+              </td>
+            </tr>
+          </table>
+          <table border="1">
+            <caption>
+              重積分
+            </caption>
+            <tr>
+              <td>
+                <span tooltip="重積分1" flow="down">
+                  <button onclick="funcInput(' \\iint_D f(x, y)dxdy ')">
+                    \[ \iint_D f(x, y)dxdy \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="重積分2" flow="down">
+                  <button onclick="funcInput(' \\iiint_V f(x, y, z)dxdydz ')">
+                    \[ \iiint_V f(x, y, z)dxdydz \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="重積分3" flow="down">
+                  <button
+                    onclick="funcInput(' \\int \\!\\!\\!\\! \\int_D f(x, y)dxdy ')"
+                  >
+                    \[ \int \!\!\!\! \int_D f(x, y)dxdy \]
+                  </button>
+                </span>
+              </td>
+            </tr>
+          </table>
+          <table border="1">
+            <tr>
+              <td>
+                <span tooltip="多重積分" flow="down">
+                  <button
+                    onclick="funcInput(' \\idotsint_D f(x_1, \\cdots , x_n) dx_1 \\cdots dx_n ')"
+                  >
+                    \[ \idotsint_D f(x_1, \cdots , x_n) dx_1 \cdots dx_n \]
+                  </button>
+                </span>
+              </td>
+            </tr>
+          </table>
+          <table border="1">
+            <caption>
+              周回積分
+            </caption>
+            <tr>
+              <td>
+                <span tooltip="周回積分1" flow="down">
+                  <button onclick="funcInput(' \\oint_C fds ')">
+                    \[ \oint_C fds \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="周回積分2" flow="down">
+                  <button
+                    onclick="funcInput(' \\oint_C \\mathbf{F}(\\mathbf{r}) \\cdot d\\mathbf{r} ')"
+                  >
+                    \[ \oint_C \mathbf{F}(\mathbf{r}) \cdot d\mathbf{r} \]
+                  </button>
+                </span>
+              </td>
+            </tr>
+          </table>
+        </div>
+        <!-- ベクトル -->
+        <div id="vector">
+          <table border="1">
+            <caption>
+              矢印表記
+            </caption>
+            <tr>
+              <td>
+                <span tooltip="矢印表記1" flow="down">
+                  <button onclick="funcInput(' \\vec{a} ')">
+                    \[ \vec{a} \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="矢印表記2" flow="down">
+                  <button onclick="funcInput(' \\overrightarrow{AB} ')">
+                    \[ \overrightarrow{AB} \]
+                  </button>
+                </span>
+              </td>
+            </tr>
+          </table>
+          <table border="1">
+            <caption>
+              太字表記
+            </caption>
+            <tr>
+              <td>
+                <span tooltip="太字表記" flow="down">
+                  <button onclick="funcInput(' \\boldsymbol{a} ')">
+                    \[ \boldsymbol{a} \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="太字表記 例" flow="down">
+                  <button onclick="funcInput(' \\boldsymbol{A} ')">
+                    \[ \boldsymbol{A} \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="太字表記 単位ベクトル1" flow="down">
+                  <button onclick="funcInput(' \\boldsymbol{\\mathrm{e}} ')">
+                    \[ \boldsymbol{\mathrm{e}} \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="太字表記 単位ベクトル2" flow="down">
+                  <button onclick="funcInput(' \\mathbf{e} ')">
+                    \[ \mathbf{e} \]
+                  </button>
+                </span>
+              </td>
+            </tr>
+          </table>
+          <table border="1">
+            <caption>
+              行ベクトル・列ベクトル
+            </caption>
+            <tr>
+              <td>
+                <span tooltip="行ベクトル" flow="down">
+                  <button onclick="funcInput(' ( a_1, a_2, \\cdots , a_n ) ')">
+                    \[ ( a_1, a_2, \cdots , a_n ) \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="列ベクトル" flow="down">
+                  <button
+                    onclick="funcInput(' \\left(\\begin{array}{c} a_1 \\\\a_2 \\\\ \\vdots \\\\ a_n\\end{array}\\right) ')"
+                  >
+                    \[ \left( \begin{array}{c} a_1 \\a_2 \\ \vdots \\ a_n
+                    \end{array}\right) \]
+                  </button>
+                </span>
+              </td>
+            </tr>
+          </table>
+          <table border="1">
+            <caption>
+              ノルム
+            </caption>
+            <tr>
+              <td>
+                <span tooltip="ノルム 例1" flow="down">
+                  <button onclick="funcInput(' |\\vec{a}| ')">
+                    \[ |\vec{a}| \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="ノルム 例2" flow="down">
+                  <button onclick="funcInput(' \\| \\boldsymbol{A} \\| ')">
+                    \[ \| \boldsymbol{A} \| \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="ノルム 例3" flow="down">
+                  <button
+                    onclick="funcInput(' a = \\| \\boldsymbol{a} \\| = \\sqrt{a_1^2 + a_2^2 + \\cdots +a_n^2} ')"
+                  >
+                    \[ a = \| \boldsymbol{a} \| = \sqrt{a_1^2 + a_2^2 + \cdots
+                    +a_n^2} \]
+                  </button>
+                </span>
+              </td>
+            </tr>
+          </table>
+          <table border="1">
+            <caption>
+              内積(スカラー積)・外積(ベクトル積)
+            </caption>
+            <tr>
+              <td>
+                <span tooltip="内積" flow="down">
+                  <button
+                    onclick="funcInput(' \\boldsymbol{a} \\cdot \\boldsymbol{b} ')"
+                  >
+                    \[ \boldsymbol{a} \cdot \boldsymbol{b} \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="外積" flow="down">
+                  <button
+                    onclick="funcInput('  \\boldsymbol{a} \\times \\boldsymbol{b} ')"
+                  >
+                    \[ \boldsymbol{a} \times \boldsymbol{b} \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="内積の定義" flow="down">
+                  <button
+                    onclick="funcInput(' ( \\boldsymbol{a} , \\boldsymbol{b} ) = \\boldsymbol{a} \\cdot \\boldsymbol{b} = \\sum_{i=1}^n a_i b_i ')"
+                  >
+                    \[ ( \boldsymbol{a} , \boldsymbol{b} ) = \boldsymbol{a}
+                    \cdot \boldsymbol{b} = \sum_{i=1}^n a_i b_i \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="外積の定義" flow="down">
+                  <button
+                    onclick="funcInput(' [ \\boldsymbol{a} , \\boldsymbol{b} ] = \\boldsymbol{a} \\times \\boldsymbol{b} = \\sum_{j,k} \\varepsilon_{ijk} a_j b_k ')"
+                  >
+                    \[ [ \boldsymbol{a} , \boldsymbol{b} ] = \boldsymbol{a}
+                    \times \boldsymbol{b} = \sum_{j,k} \varepsilon_{ijk} a_j b_k
+                    \]
+                  </button>
+                </span>
+              </td>
+            </tr>
+          </table>
+          <table border="1">
+            <caption>
+              転置
+            </caption>
+            <tr>
+              <td>
+                <span tooltip="転置1" flow="down">
+                  <button onclick="funcInput(' {}^t \\boldsymbol{A} ')">
+                    \[ {}^t \boldsymbol{A} \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="転置2" flow="down">
+                  <button
+                    onclick="funcInput(' \\boldsymbol{A}^{ \\mathrm{T} } ')"
+                  >
+                    \[ \boldsymbol{A}^{ \mathrm{T} } \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="n次元列ベクトルの転置" flow="down">
+                  <button
+                    onclick="funcInput(' \\boldsymbol{a} = ( a_1, a_2, \\cdots , a_n )^{ \\mathrm{T} } = \\left( \\begin{array}{c} a_1 \\\\ a_2 \\\\ \\vdots \\\\ a_n \\end{array}\\right) ')"
+                  >
+                    \[ \boldsymbol{a} = ( a_1, a_2, \cdots , a_n )^{ \mathrm{T}
+                    } = \left( \begin{array}{c} a_1 \\ a_2 \\ \vdots \\ a_n
+                    \end{array} \right) \]
+                  </button>
+                </span>
+              </td>
+            </tr>
+          </table>
+        </div>
+        <!-- 行列 -->
+        <div id="matrix">
+          <table border="1">
+            <caption>
+              matrix環境
+            </caption>
+            <tr>
+              <td>
+                <span tooltip="matrix環境1" flow="down">
+                  <button
+                    onclick="funcInput(' \\begin{matrix}a & b \\\\ c & d \\end{matrix} ')"
+                  >
+                    \[ \begin{matrix} a & b \\ c & d \end{matrix} \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="matrix環境2" flow="down">
+                  <button
+                    onclick="funcInput(' \\begin{pmatrix}a & b \\\\ c & d \\end{pmatrix} ')"
+                  >
+                    \[ \begin{pmatrix} a & b \\ c & d \end{pmatrix} \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="matrix環境3" flow="down">
+                  <button
+                    onclick="funcInput(' \\begin{bmatrix}a & b \\\\ c & d \\end{bmatrix} ')"
+                  >
+                    \[ \begin{bmatrix} a & b \\ c & d \end{bmatrix} \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="matrix環境4" flow="down">
+                  <button
+                    onclick="funcInput(' \\begin{Bmatrix}a & b \\\\ c & d \\end{Bmatrix} ')"
+                  >
+                    \[ \begin{Bmatrix} a & b \\ c & d \end{Bmatrix} \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="matrix環境5" flow="down">
+                  <button
+                    onclick="funcInput(' \\begin{vmatrix}a & b \\\\ c & d \\end{vmatrix} ')"
+                  >
+                    \[ \begin{vmatrix} a & b \\ c & d \end{vmatrix} \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="matrix環境6" flow="down">
+                  <button
+                    onclick="funcInput(' \\begin{Vmatrix}a & b \\\\ c & d \\end{Vmatrix} ')"
+                  >
+                    \[ \begin{Vmatrix} a & b \\ c & d \end{Vmatrix} \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="matrix環境 例" flow="down">
+                  <button
+                    onclick="funcInput(' \\begin{pmatrix}a & b & c \\\\ d & e & f \\end{pmatrix} ')"
+                  >
+                    \[ \begin{pmatrix}a & b & c \\ d & e & f \end{pmatrix} \]
+                  </button>
+                </span>
+              </td>
+            </tr>
+          </table>
+          <table border="1">
+            <caption>
+              array環境
+            </caption>
+            <tr>
+              <td>
+                <span tooltip="array環境1" flow="down">
+                  <button
+                    onclick="funcInput(' \\left( \\begin{array}{ccc} a & b & c \\\\ d & e & f \\\\ g & h & i \\end{array} \\right) ')"
+                  >
+                    \[ \left( \begin{array}{ccc} a & b & c \\ d & e & f \\ g & h
+                    & i \end{array} \right) \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="array環境2" flow="down">
+                  <button
+                    onclick="funcInput(' \\left[ \\begin{array}{rrr} 1 & 10 & 100 \\\\ 10 & 100 & 1 \\\\ 100 & 1 & 10 \\end{array} \\right] ')"
+                  >
+                    \[ \left[ \begin{array}{rrr} 1 & 10 & 100 \\ 10 & 100 & 1 \\
+                    100 & 1 & 10 \end{array} \right] \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="array環境3" flow="down">
+                  <button
+                    onclick="funcInput(' \\left( \\begin{array}{crl} 1 & 10 & 100 \\\\ 10 & 100 & 1 \\\\100 & 1 & 10 \\end{array} \\right) ')"
+                  >
+                    \[ \left( \begin{array}{crl} 1 & 10 & 100 \\ 10 & 100 & 1 \\
+                    100 & 1 & 10 \end{array} \right) \]
+                  </button>
+                </span>
+              </td>
+            </tr>
+          </table>
+          <table border="1">
+            <caption>
+              サンプル
+            </caption>
+            <tr>
+              <td>
+                <span tooltip="一般のm行n列の行列" flow="down">
+                  <button
+                    onclick="funcInput(' A = a_{ij} = \\left( \\begin{array}{cccc} a_{11} & a_{12} & \\ldots & a_{1n} \\\\ a_{21} & a_{22} & \\ldots & a_{2n} \\\\ \\vdots & \\vdots & \\ddots & \\vdots \\\\ a_{m1} & a_{m2} & \\ldots & a_{mn} \\end{array} \\right) ')"
+                  >
+                    \[ A = a_{ij} = \left( \begin{array}{cccc} a_{11} & a_{12} &
+                    \ldots & a_{1n} \\ a_{21} & a_{22} & \ldots & a_{2n} \\
+                    \vdots & \vdots & \ddots & \vdots \\ a_{m1} & a_{m2} &
+                    \ldots & a_{mn} \end{array} \right) \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="区切り" flow="down">
+                  <button
+                    onclick="funcInput(' \\left(\\begin{array}{c|cc} a & b & c \\\\ \\hline d & e & f \\\\ g & h & i \\end{array} \\right) ')"
+                  >
+                    \[ \left( \begin{array}{c|cc} a & b & c \\ \hline d & e & f
+                    \\ g & h & i \end{array} \right) \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="対角行列" flow="down">
+                  <button
+                    onclick="funcInput(' \\begin{pmatrix} \\lambda_1 & & & &  \\\\ & \\lambda_2 & & \\Huge{0} & \\\\ & & \\ddots & & \\\\ & \\Huge{0} & & \\lambda_{n-1} & \\\\ & & & & \\lambda_n \\end{pmatrix} ')"
+                  >
+                    \[ \begin{pmatrix} \lambda_1 & & & & \\ & \lambda_2 & &
+                    \Huge{0} & \\ & & \ddots & & \\ & \Huge{0} & & \lambda_{n-1}
+                    & \\ & & & & \lambda_n \end{pmatrix} \]
+                  </button>
+                </span>
+              </td>
+            </tr>
+          </table>
+          <table border="1">
+            <caption>
+              その他
+            </caption>
+            <tr>
+              <td>
+                <span tooltip="転置行列" flow="down">
+                  <button
+                    onclick="funcInput(' \\left(\\begin{array}{ccc} a & b & c\\\\ d & e & f\\end{array}\\right)^{\\mathrm{T}} =\\left(\\begin{array}{cc} a & d \\\\ b & e \\\\ c & f \\end{array}\\right) ')"
+                  >
+                    \[ \left(\begin{array}{ccc} a & b & c\\ d & e & f
+                    \end{array}\right)^{\mathrm{T}} =\left(\begin{array}{cc} a &
+                    d \\ b & e \\ c & f \end{array}\right) \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="対角和" flow="down">
+                  <button
+                    onclick="funcInput(' \\mathrm{tr} \\begin{pmatrix} a_{11} & a_{12} & a_{13} \\\\ a_{21} & a_{22} & a_{23} \\\\ a_{31} & a_{32} & a_{33} \\end{pmatrix} = a_{11} + a_{22} + a_{33} ')"
+                  >
+                    \[ \mathrm{tr} \begin{pmatrix} a_{11} & a_{12} & a_{13} \\
+                    a_{21} & a_{22} & a_{23} \\ a_{31} & a_{32} & a_{33}
+                    \end{pmatrix} = a_{11} + a_{22} + a_{33} \]
+                  </button>
+                </span>
+              </td>
+            </tr>
+          </table>
+          <table border="1">
+            <tr>
+              <td>
+                <span tooltip="行列式" flow="down">
+                  <button
+                    onclick="funcInput(' \\mathrm{det} A = \\begin{vmatrix}a & b \\\\ c & d \\end{vmatrix} = ad - bc ')"
+                  >
+                    \[ \mathrm{det} A = \begin{vmatrix} a & b \\ c & d
+                    \end{vmatrix} = ad - bc \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="階数" flow="down">
+                  <button onclick="funcInput(' \\mathrm{rank} A ')">
+                    \[ \mathrm{rank} A \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="次元" flow="down">
+                  <button onclick="funcInput(' \\dim A ')">\[ \dim A \]</button>
+                </span>
+              </td>
+            </tr>
+          </table>
+        </div>
+        <!-- スペース -->
+        <div id="space">
+          <table border="1">
+            <caption>
+              空白
+            </caption>
+            <tr>
+              <td>
+                <span tooltip="空白小" flow="down">
+                  <button onclick="funcInput(' \\ ')">\[ space \]</button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="空白大" flow="down">
+                  <button onclick="funcInput(' \\quad ')">\[ space*2 \]</button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="空白大*2" flow="down">
+                  <button onclick="funcInput(' \\qquad ')">
+                    \[ space*2 \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="空白大*3/18" flow="down">
+                  <button onclick="funcInput(' \\, ')">\[ space*3/18 \]</button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="空白大*4/18" flow="down">
+                  <button onclick="funcInput(' \\: ')">\[ space*4/18 \]</button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="空白大*5/18" flow="down">
+                  <button onclick="funcInput(' \\;')">\[ space*5/18 \]</button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="空白大*(-3/18)" flow="down">
+                  <button onclick="funcInput(' \\! ')">
+                    \[ space*(-3/18) \]
+                  </button>
+                </span>
+              </td>
+            </tr>
+          </table>
+        </div>
+        <!-- 表示形式 -->
+        <div id="displayFormat">
+          <table border="1">
+            <caption>
+              複数行の数式
+            </caption>
+            <tr>
+              <td>
+                <span tooltip="「\\」で改行" flow="down">
+                  <button
+                    onclick="funcInput(' \\begin{eqnarray} x_1 + 2x_2 & = 1 \\\\ 2x_1 + 3x_2 & = 3 \\end{eqnarray} ')"
+                  >
+                    \[ \begin{eqnarray} x_1 + 2x_2 & = 1 \\ 2x_1 + 3x_2 & = 3
+                    \end{eqnarray} \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="「&」で任意の位置を揃える" flow="down">
+                  <button
+                    onclick="funcInput(' \\begin{align} x_1 + 2x_2 + x_3 & = 3 \\\\ 2x_1 + 3x_2 + 4x_3 & = 2 \\\\ 3x_1 + 2x_2 + x_3 & = 0 \\end{align} ')"
+                  >
+                    \[ \begin{align} x_1 + 2x_2 + x_3 & = 3 \\ 2x_1 + 3x_2 +
+                    4x_3 & = 2 \\ 3x_1 + 2x_2 + x_3 & = 0 \end{align} \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="「*」で自動式番号取得を無効" flow="down">
+                  <button
+                    onclick="funcInput(' \\begin{align*} x^2 - (a + b)x + ab & = 0 \\\\ (x - a) (x - b) & = 0 \\\\ x & = a, b \\end{align*} ')"
+                  >
+                    \[ \begin{align*} x^2 - (a + b)x + ab & = 0 \\ (x - a) (x -
+                    b) & = 0 \\ x & = a, b \end{align*} \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span
+                  tooltip="「\tag{}」で別行立ての数式に式番号を付与"
+                  flow="down"
+                >
+                  <button
+                    onclick="funcInput(' \\begin{eqnarray} x_1 + 2x_2 & = & 1 \\tag{99} \\\\ 2x_1 + 3x_2 & = & 3 \\tag{100} \\end{eqnarray} ')"
+                  >
+                    \[ \begin{eqnarray} x_1 + 2x_2 & = & 1 \tag{1} \\ 2x_1 +
+                    3x_2 & = & 3 \tag{2} \end{eqnarray} \]
+                  </button>
+                </span>
+              </td>
+            </tr>
+          </table>
+          <table border="1">
+            <caption>
+              場合分け
+            </caption>
+            <tr>
+              <td>
+                <span tooltip="場合分け 例1" flow="down">
+                  <button
+                    onclick="funcInput(' \\begin{cases} x_1 + 2x_2 + x_3 = 3 \\\\ 2x_1 + 3x_2 + 4x_3 = 2 \\\\ 3x_1 + 2x_2 + x_3 = 0 \\end{cases} ')"
+                  >
+                    \[ \begin{cases} x_1 + 2x_2 + x_3 = 3 \\ 2x_1 + 3x_2 + 4x_3
+                    = 2 \\ 3x_1 + 2x_2 + x_3 = 0 \end{cases} \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="場合分け 例2" flow="down">
+                  <button
+                    onclick="funcInput(' \\|x|= \\begin{cases} x & ( x \\ge 0 ) \\\\ -x & ( x \\lt 0 ) \\end{cases} ')"
+                  >
+                    \[ |x|= \begin{cases} x & ( x \ge 0 ) \\ -x & ( x \lt 0 )
+                    \end{cases} \]
+                  </button>
+                </span>
+              </td>
+            </tr>
+          </table>
+        </div>
+        <!-- フォント/サイズ -->
+        <div id="fontAndSize">
+          <table border="1">
+            <caption>
+              書体
+            </caption>
+            <tr>
+              <td>
+                <span tooltip="ローマン体(関数など)" flow="down">
+                  <button onclick="funcInput(' \\rm ABC　abc　あいう ')">
+                    \[ \rm ABC　abc　あいう \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="ボールド体(ベクトルなど)" flow="down">
+                  <button onclick="funcInput(' \\bf ABC　abc　あいう ')">
+                    \[ \bf ABC　abc　あいう \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="イタリック体(物理量など)" flow="down">
+                  <button onclick="funcInput(' \\it ABC　abc　あいう ')">
+                    \[ \it ABC　abc　あいう \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="サンセリフ体" flow="down">
+                  <button onclick="funcInput(' \\sf ABC　abc　あいう ')">
+                    \[ \sf ABC　abc　あいう \]
+                  </button>
+                </span>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <span tooltip="タイプライタ体" flow="down">
+                  <button onclick="funcInput(' \\tt ABC　abc　あいう ')">
+                    \[ \tt ABC　abc　あいう \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="フラクトゥール(ドイツ字体)" flow="down">
+                  <button onclick="funcInput(' \\frak ABC　abc　あいう ')">
+                    \[ \frak ABC　abc　あいう \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span
+                  tooltip="スクリプトフォント(筆記体、大文字のみ)"
+                  flow="down"
+                >
+                  <button onclick="funcInput(' \\scr ABC　abc　あいう ')">
+                    \[ \scr ABC　abc　あいう \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="白抜き文字(集合など)" flow="down">
+                  <button onclick="funcInput(' \\mathbb{ABC　abc　あいう} ')">
+                    \[ \mathbb{ABC　abc　あいう} \]
+                  </button>
+                </span>
+              </td>
+            </tr>
+          </table>
+          <table border="1">
+            <tr>
+              <td>
+                <span tooltip="フォント混在" flow="down">
+                  <button onclick="funcInput(' \\scr{AB}\\bf{CD}\\it{EF} ')">
+                    \[ \scr{AB}\bf{CD}\it{EF} \]
+                  </button>
+                </span>
+              </td>
+            </tr>
+          </table>
+          <table border="1">
+            <caption>
+              カリグラフィー
+            </caption>
+            <tr>
+              <td>
+                <span tooltip="カリグラフィー" flow="down">
+                  <button
+                    onclick="funcInput(' \\mathcal{ABCDEFGHIJKLMN}\\mathcal{OPQRSTUVWXYZ} ')"
+                  >
+                    \[ \mathcal{ABCDEFGHIJKLMN} \mathcal{OPQRSTUVWXYZ} \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="カリグラフィー 例：ラプラス変換" flow="down">
+                  <button
+                    onclick="funcInput(' \\mathcal{L}[f(t)]=\\int_0^{\\infty}f(t)e^{-st}dt ')"
+                  >
+                    \[ \mathcal{L}[f(t)]=\int_0^{\infty}f(t)e^{-st}dt \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="カリグラフィー 例：フーリエ変換" flow="down">
+                  <button
+                    onclick="funcInput(' \\mathcal{F}[g(t)]=\\int_{-\\infty}^{\\infty}g(t)e^{-2\\pi ift}dt ')"
+                  >
+                    \[ \mathcal{F}[g(t)]=\int_{-\infty}^{\infty}g(t)e^{-2\pi
+                    ift}dt \]
+                  </button>
+                </span>
+              </td>
+            </tr>
+          </table>
+          <table border="1">
+            <caption>
+              文字サイズ
+            </caption>
+            <tr>
+              <td>
+                <span tooltip="文字サイズ1" flow="down">
+                  <button onclick="funcInput(' \\Huge Huge')">
+                    \[ \Huge Huge \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="文字サイズ2" flow="down">
+                  <button onclick="funcInput(' \\huge huge')">
+                    \[ \huge huge \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="文字サイズ3" flow="down">
+                  <button onclick="funcInput(' \\LARGE LARGE')">
+                    \[ \LARGE LARGE\]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="文字サイズ4" flow="down">
+                  <button onclick="funcInput(' \\Large Large')">
+                    \[ \Large Large \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="文字サイズ5" flow="down">
+                  <button onclick="funcInput(' \\large large')">
+                    \[ \large large\]
+                  </button>
+                </span>
+              </td>
+            </tr>
+          </table>
+          <table border="1">
+            <tr>
+              <td>
+                <span tooltip="文字サイズ6" flow="down">
+                  <button onclick="funcInput(' \\normalsize normalsize')">
+                    \[ \normalsize normalsize \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="文字サイズ7" flow="down">
+                  <button onclick="funcInput(' \\small small')">
+                    \[ \small small \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="文字サイズ8" flow="down">
+                  <button onclick="funcInput(' \\scriptsize scriptsize')">
+                    \[ \scriptsize scriptsize \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="文字サイズ9" flow="down">
+                  <button onclick="funcInput(' \\tiny tiny')">
+                    \[ \tiny tiny \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="サイズ混在" flow="down">
+                  <button
+                    onclick="funcInput(' \\Large{L}\\normalsize{M}\\small{s}')"
+                  >
+                    \[ \Large{L}\normalsize{M}\small{s} \]
+                  </button>
+                </span>
+              </td>
+            </tr>
+          </table>
+        </div>
+        <!-- ギリシャ文字（大文字） -->
+        <div id="greekLettersUppercase">
+          <table border="1">
+            <caption>
+              ギリシャ文字（大文字）
+            </caption>
+            <tr>
+              <td>
+                <span tooltip="ガンマ1" flow="down">
+                  <button onclick="funcInput(' \\Gamma ')">\[ \Gamma \]</button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="ガンマ2" flow="down">
+                  <button onclick="funcInput(' \\varGamma ')">
+                    \[ \varGamma \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="デルタ1" flow="down">
+                  <button onclick="funcInput(' \\Delta ')">\[ \Delta \]</button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="デルタ2" flow="down">
+                  <button onclick="funcInput(' \\varDelta ')">
+                    \[ \varDelta \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="シータ1" flow="down">
+                  <button onclick="funcInput(' \\Theta ')">\[ \Theta \]</button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="シータ2" flow="down">
+                  <button onclick="funcInput(' \\varTheta ')">
+                    \[ \varTheta \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="ラムダ1" flow="down">
+                  <button onclick="funcInput(' \\Lambda ')">
+                    \[ \Lambda \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="ラムダ2" flow="down">
+                  <button onclick="funcInput(' \\varLambda ')">
+                    \[ \varLambda \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="クサイ1" flow="down">
+                  <button onclick="funcInput(' \\Xi ')">\[ \Xi \]</button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="クサイ2" flow="down">
+                  <button onclick="funcInput(' \\varXi ')">\[ \varXi \]</button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="パイ1" flow="down">
+                  <button onclick="funcInput(' \\Pi ')">\[ \Pi \]</button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="パイ2" flow="down">
+                  <button onclick="funcInput(' \\varPi ')">\[ \varPi \]</button>
+                </span>
+              </td>
+            </tr>
+          </table>
+          <table border="1">
+            <tr>
+              <td>
+                <span tooltip="シグマ1" flow="down">
+                  <button onclick="funcInput(' \\Sigma ')">\[ \Sigma \]</button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="シグマ2" flow="down">
+                  <button onclick="funcInput(' \\varSigma ')">
+                    \[ \varSigma \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="イプシロン1" flow="down">
+                  <button onclick="funcInput(' \\Upsilon ')">
+                    \[ \Upsilon \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="イプシロン2" flow="down">
+                  <button onclick="funcInput(' \\varUpsilon ')">
+                    \[ \varUpsilon \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="ファイ1" flow="down">
+                  <button onclick="funcInput(' \\Phi ')">\[ \Phi \]</button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="ファイ2" flow="down">
+                  <button onclick="funcInput(' \\varPhi ')">
+                    \[ \varPhi \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="プサイ1" flow="down">
+                  <button onclick="funcInput(' \\Psi ')">\[ \Psi \]</button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="プサイ2" flow="down">
+                  <button onclick="funcInput(' \\varPsi ')">
+                    \[ \varPsi \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="オメガ1" flow="down">
+                  <button onclick="funcInput(' \\Omega ')">\[ \Omega \]</button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="オメガ2" flow="down">
+                  <button onclick="funcInput(' \\varOmega ')">
+                    \[ \varOmega \]
+                  </button>
+                </span>
+              </td>
+            </tr>
+          </table>
+        </div>
+        <!-- ギリシャ文字（小文字） -->
+        <div id="greekLettersLowercase">
+          <table border="1">
+            <caption>
+              ギリシャ文字（小文字）
+            </caption>
+            <tr>
+              <td>
+                <span tooltip="アルファ" flow="down">
+                  <button onclick="funcInput(' \\alpha ')">\[ \alpha \]</button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="ベータ" flow="down">
+                  <button onclick="funcInput(' \\beta ')">\[ \beta \]</button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="ガンマ" flow="down">
+                  <button onclick="funcInput(' \\gamma ')">\[ \gamma \]</button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="デルタ" flow="down">
+                  <button onclick="funcInput(' \\delta ')">\[ \delta \]</button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="イプシロン1" flow="down">
+                  <button onclick="funcInput(' \\epsilon ')">
+                    \[ \epsilon \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="イプシロン2" flow="down">
+                  <button onclick="funcInput(' \\varepsilon ')">
+                    \[ \varepsilon \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="ゼータ" flow="down">
+                  <button onclick="funcInput(' \\zeta ')">\[ \zeta \]</button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="イータ" flow="down">
+                  <button onclick="funcInput(' \\eta ')">\[ \eta \]</button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="シータ1" flow="down">
+                  <button onclick="funcInput(' \\theta ')">\[ \theta \]</button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="シータ2" flow="down">
+                  <button onclick="funcInput(' \\vartheta ')">
+                    \[ \vartheta \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="イオタ" flow="down">
+                  <button onclick="funcInput(' \\iota ')">\[ \iota \]</button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="カッパ" flow="down">
+                  <button onclick="funcInput(' \\kappa ')">\[ \kappa \]</button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="ラムダ" flow="down">
+                  <button onclick="funcInput(' \\lambda ')">
+                    \[ \lambda \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="ミュー" flow="down">
+                  <button onclick="funcInput(' \\mu ')">\[ \mu \]</button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="ニュー" flow="down">
+                  <button onclick="funcInput(' \\nu ')">\[ \nu \]</button>
+                </span>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <span tooltip="クサイ" flow="down">
+                  <button onclick="funcInput(' \\xi ')">\[ \xi \]</button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="オミクロン" flow="down">
+                  <button onclick="funcInput('\o ')">\[ o \]</button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="パイ1" flow="down">
+                  <button onclick="funcInput(' \\pi ')">\[ \pi \]</button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="パイ2" flow="down">
+                  <button onclick="funcInput(' \\varpi ')">\[ \varpi \]</button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="ロー1" flow="down">
+                  <button onclick="funcInput(' \\rho ')">\[ \rho \]</button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="ロー2" flow="down">
+                  <button onclick="funcInput(' \\varrho ')">
+                    \[ \varrho \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="シグマ1" flow="down">
+                  <button onclick="funcInput(' \\sigma ')">\[ \sigma \]</button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="シグマ2" flow="down">
+                  <button onclick="funcInput(' \\varsigma ')">
+                    \[ \varsigma \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="タウ" flow="down">
+                  <button onclick="funcInput(' \\tau  ')">\[ \tau \]</button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="イプシロン" flow="down">
+                  <button onclick="funcInput(' \\upsilon ')">
+                    \[ \upsilon \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="ファイ1" flow="down">
+                  <button onclick="funcInput(' \\phi ')">\[ \phi \]</button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="ファイ2" flow="down">
+                  <button onclick="funcInput(' \\varphi ')">
+                    \[ \varphi \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="カイ" flow="down">
+                  <button onclick="funcInput(' \\chi ')">\[ \chi \]</button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="プサイ" flow="down">
+                  <button onclick="funcInput(' \\psi ')">\[ \psi \]</button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="オメガ" flow="down">
+                  <button onclick="funcInput(' \\omega ')">\[ \omega \]</button>
+                </span>
+              </td>
+            </tr>
+          </table>
+        </div>
+        <!-- 特殊文字 -->
+        <div id="specialCharacter">
+          <table border="1">
+            <caption>
+              記号
+            </caption>
+            <tr>
+              <td>
+                <span tooltip="#" flow="down">
+                  <button onclick="funcInput(' \\# ')">\[ \# \]</button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="$" flow="down">
+                  <button onclick="funcInput(' \\$ ')">\[ \$ \]</button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="%" flow="down">
+                  <button onclick="funcInput(' \\% ')">\[ \% \]</button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="&" flow="down">
+                  <button onclick="funcInput(' \\& ')">\[ \& \]</button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="{" flow="down">
+                  <button onclick="funcInput(' \\{ ')">\[ \{ \]</button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="}" flow="down">
+                  <button onclick="funcInput(' \\} ')">\[ \} \]</button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="_(アンダーバー)" flow="down">
+                  <button onclick="funcInput(' \\_ ')">\[ \_ \]</button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="S" flow="down">
+                  <button onclick="funcInput(' \\S ')">\[ \S \]</button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="<" flow="down">
+                  <button onclick="funcInput(' \\verb|<| ')">
+                    \[ \verb|<| \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip=">" flow="down">
+                  <button onclick="funcInput(' \\verb|>| ')">
+                    \[ \verb|>| \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="^" flow="down">
+                  <button onclick="funcInput(' \\verb|^| ')">
+                    \[ \verb|^| \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="~" flow="down">
+                  <button onclick="funcInput(' \\verb|~| ')">
+                    \[ \verb|~| \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="\" flow="down">
+                  <button onclick="funcInput(' \\verb|\\| ')">
+                    \[ \verb|\| \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="|" flow="down">
+                  <button onclick="funcInput(' \\verb+|+ ')">
+                    \[ \verb+|+ \]
+                  </button>
+                </span>
+              </td>
+            </tr>
+          </table>
+          <table border="1">
+            <caption>
+              ロゴ
+            </caption>
+            <tr>
+              <td>
+                <span tooltip="TeXロゴ" flow="down">
+                  <button onclick="funcInput(' \\TeX ')">\[ \TeX \]</button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="LaTeXロゴ" flow="down">
+                  <button onclick="funcInput(' \\LaTeX ')">\[ \LaTeX \]</button>
+                </span>
+              </td>
+            </tr>
+          </table>
+          <table border="1">
+            <caption>
+              その他特殊文字
+            </caption>
+            <tr>
+              <td>
+                <span tooltip="アレフ(無限集合の濃度)" flow="down">
+                  <button onclick="funcInput(' \\aleph ')">\[ \aleph \]</button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="エイチバー(プランク定数)" flow="down">
+                  <button onclick="funcInput(' \\hbar ')">\[ \hbar \]</button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="ペー関数" flow="down">
+                  <button onclick="funcInput(' \\wp ')">\[ \wp \]</button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="実部(Re)" flow="down">
+                  <button onclick="funcInput(' \\Re ')">\[ \Re \]</button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="虚部(Im)" flow="down">
+                  <button onclick="funcInput(' \\Im ')">\[ \Im \]</button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="スペード" flow="down">
+                  <button onclick="funcInput(' \\spadesuit ')">
+                    \[ \spadesuit \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="ダイヤ" flow="down">
+                  <button onclick="funcInput(' \\diamondsuit ')">
+                    \[ \diamondsuit \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="クローバー" flow="down">
+                  <button onclick="funcInput(' \\clubsuit ')">
+                    \[ \clubsuit \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="ハート" flow="down">
+                  <button onclick="funcInput(' \\heartsuit ')">
+                    \[ \heartsuit \]
+                  </button>
+                </span>
+              </td>
+            </tr>
+          </table>
+        </div>
+        <!-- アクセント -->
+        <div id="accent">
+          <table border="1">
+            <caption>
+              アクセント
+            </caption>
+            <tr>
+              <td>
+                <span tooltip="アクセント1" flow="down">
+                  <button onclick="funcInput(' \\hat{a} ')">
+                    \[ \hat{a} \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="アクセント2" flow="down">
+                  <button onclick="funcInput(' \\acute{a} ')">
+                    \[ \acute{a} \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="アクセント3" flow="down">
+                  <button onclick="funcInput(' \\tilde{a} ')">
+                    \[ \tilde{a} \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="アクセント4" flow="down">
+                  <button onclick="funcInput(' \\bar{a} ')">
+                    \[ \bar{a} \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="アクセント5" flow="down">
+                  <button onclick="funcInput(' \\dot{a} ')">
+                    \[ \dot{a} \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="アクセント6" flow="down">
+                  <button onclick="funcInput(' \\check{a} ')">
+                    \[ \check{a} \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="アクセント7" flow="down">
+                  <button onclick="funcInput(' \\grave{a} ')">
+                    \[ \grave{a} \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="アクセント8" flow="down">
+                  <button onclick="funcInput(' \\breve{a} ')">
+                    \[ \breve{a} \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="アクセント9" flow="down">
+                  <button onclick="funcInput(' \\vec{a} ')">
+                    \[ \vec{a} \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="アクセント10" flow="down">
+                  <button onclick="funcInput(' \\ddot{a} ')">
+                    \[ \ddot{a} \]
+                  </button>
+                </span>
+              </td>
+            </tr>
+          </table>
+          <table border="1">
+            <caption>
+              複数文字に対するアクセント記号
+            </caption>
+            <tr>
+              <td>
+                <span tooltip="アクセント11" flow="down">
+                  <button onclick="funcInput(' \\widehat{ABC} ')">
+                    \[ \widehat{ABC} \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="アクセント12" flow="down">
+                  <button onclick="funcInput(' \\overline{ABC} ')">
+                    \[ \overline{ABC} \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="アクセント13" flow="down">
+                  <button onclick="funcInput(' \\overrightarrow{ABC} ')">
+                    \[ \overrightarrow{ABC} \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="アクセント14" flow="down">
+                  <button onclick="funcInput(' \\overbrace{ABC} ')">
+                    \[ \overbrace{ABC} \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="アクセント15" flow="down">
+                  <button
+                    onclick="funcInput(' \\overbrace{ABC \\cdots Z}^{26} ')"
+                  >
+                    \[ \overbrace{ABC \cdots Z}^{26} \]
+                  </button>
+                </span>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <span tooltip="アクセント16" flow="down">
+                  <button onclick="funcInput(' \\widetilde{ABC} ')">
+                    \[ \widetilde{ABC} \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="アクセント17" flow="down">
+                  <button onclick="funcInput(' \\underline{ABC} ')">
+                    \[ \underline{ABC} \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="アクセント18" flow="down">
+                  <button onclick="funcInput(' \\overleftarrow{ABC} ')">
+                    \[ \overleftarrow{ABC} \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="アクセント19" flow="down">
+                  <button onclick="funcInput(' \\underbrace{ABC} ')">
+                    \[ \underbrace{ABC} \]
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span tooltip="アクセント20" flow="down">
+                  <button
+                    onclick="funcInput(' \\underbrace{ABC \\cdots Z}_{26} ')"
+                  >
+                    \[ \underbrace{ABC \cdots Z}_{26} \]
+                  </button>
+                </span>
+              </td>
+            </tr>
+          </table>
+        </div>
+      </div>
+      <div id="disc">
+        <!-- <p>
+          wordなどに関数の書式でペーストするには，
+          出力された関数上で右クリックし，
+        </p>
+        <p>[Copy to ClipBoard] -> [MathML Code]をクリックして下さい．</p> -->
+      </div>
+      <section id="footer" class="footer">
+        <ul>
+          <br />
+          <a
+            href="https://ramenhuhu.com/mathjax-commandlist"
+            target="_blank"
+            rer="noopener noreferrer"
+            ><li>参考元：MathJax-LaTeXコマンド集【完全版】</li>
+          </a>
+          <br />
+          <li>
+            この作成物および同梱物を使用したことによって生じたすべての障害・損害・不具合等に関しては，私と私の関係者および私の所属するいかなる団体・組織とも，一切の責任を負いません．各自の責任においてご使用ください．
+          </li>
+          <br />
+          <li>制作： 273*</li>
+          <br />
+          <li>
+            This software includes the work that is distributed in the Apache
+            License 2.0.
+          </li>
+        </ul>
+      </section>
+    </div>
+    <script src="./src/jquery.min.js" type="text/javascript"></script>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script src="./src/config.js" type="text/javascript"></script>
+    <script
+      id="MathJax-script"
+      async
+      src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"
+    ></script>
+    <script src="./src/app.js" type="text/javascript"></script>
+  </body>
+</html>
